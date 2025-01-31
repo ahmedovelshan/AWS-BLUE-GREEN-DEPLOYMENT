@@ -1,4 +1,4 @@
-#Comment from GitHub
+#Comment from GitHub second
 resource "aws_vpc" "devops-vpc" {
   cidr_block       = var.vpc
   instance_tenancy = "default"
