@@ -1,2 +1,1 @@
-Hello from Your Personal Repository
-Added Comment from local repository
+Comment from Remote Repository
