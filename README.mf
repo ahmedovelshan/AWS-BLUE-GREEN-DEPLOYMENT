@@ -1,1 +1,1 @@
-Hello from GitHUM
+Hello from Terminal SAP
