@@ -137,7 +137,6 @@ resource "aws_route_table" "route-public" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  depends_on = [aws_internet_gateway.igw]
 }
 
 resource "aws_route_table_association" "blue-rt-public" {

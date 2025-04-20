@@ -61,7 +61,8 @@ resource "aws_instance" "ci-cd-tools" {
       containerd.io \
       docker-buildx-plugin \
       docker-compose-plugin
-    sudo usermod -aG docker $USER
+    ec2_username=$(awk -F: '$3 == 1000 { print $1; exit }' /etc/passwd)
+    sudo usermod -aG docker $ec2_username
 
     # Run Nexus
     sudo docker run -d --name nexus -p 8081:8081 sonatype/nexus3:latest
