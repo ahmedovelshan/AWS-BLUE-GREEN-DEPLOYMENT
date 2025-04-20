@@ -21,9 +21,9 @@ resource "aws_security_group" "alb-sg" {
 }
 
 
-resource "aws_security_group" "private-sg" {
+resource "aws_security_group" "blue-private-sg" {
     vpc_id              = aws_vpc.devops-vpc.id
-    name                = "alb-to-web"
+    name                = "blue-alb-to-web"
     description         = "Access from ALB to WEB subnet"
     dynamic "ingress" {
         for_each = var.eks-ec2-port
@@ -31,7 +31,28 @@ resource "aws_security_group" "private-sg" {
           protocol = "tcp"
           from_port = ingress.value
           to_port = ingress.value
-          cidr_blocks = var.private-subnet-cidr
+          cidr_blocks = var.blue-private-subnet-cidr
+        }     
+    }
+    egress {
+        protocol = "-1"
+        from_port = 0
+        to_port = 0
+        cidr_blocks = [ "0.0.0.0/0" ]
+    }
+}
+
+resource "aws_security_group" "green-private-sg" {
+    vpc_id              = aws_vpc.devops-vpc.id
+    name                = "green-alb-to-web"
+    description         = "Access from ALB to WEB subnet"
+    dynamic "ingress" {
+        for_each = var.eks-ec2-port
+        content {
+          protocol = "tcp"
+          from_port = ingress.value
+          to_port = ingress.value
+          cidr_blocks = var.green-private-subnet-cidr
         }     
     }
     egress {

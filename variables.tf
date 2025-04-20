@@ -9,17 +9,27 @@ variable "availability_zone" {
   default = ["eu-central-1a", "eu-central-1b"]
 }
 
-variable "private-subnet-cidr" {
+variable "blue-private-subnet-cidr" {
   type    = list(string)
   default = ["10.0.1.0/24", "10.0.2.0/24"]
 }
 
-variable "public-subnet-cidr" {
+variable "green-private-subnet-cidr" {
+  type    = list(string)
+  default = ["10.0.3.0/24", "10.0.4.0/24"]
+}
+
+variable "blue-public-subnet-cidr" {
   type    = list(string)
   default = ["10.0.5.0/24", "10.0.6.0/24"]
 }
 
-variable "ecs_name" {
+variable "green-public-subnet-cidr" {
+  type    = list(string)
+  default = ["10.0.7.0/24", "10.0.8.0/24"]
+}
+
+variable "eks_name" {
   type = string
   description = "ECS Cluster name"
   default = "devops-ecs-cluster"
@@ -28,7 +38,7 @@ variable "ecs_name" {
 variable "cloudwatch_log_name" {
     type = string
     description = "cloudwatch log location name"
-    default = "devops-ecs-cloudwatchlog"
+    default = "devops-eks-cloudwatchlog"
   
 }
 

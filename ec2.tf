@@ -12,8 +12,8 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_network_interface" "web-ec2-network" {
-  subnet_id   = aws_subnet.public-subnet[count.index].id
-  count = length(var.public-subnet-cidr)
+  subnet_id   = aws_subnet.blue-public-subnet[count.index].id
+  count = length(var.blue-public-subnet-cidr)
   security_groups = [aws_security_group.ci-cd-tools.id]
 }
 

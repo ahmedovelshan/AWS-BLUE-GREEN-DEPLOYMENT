@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "aws-dynamic-web-app"
+    bucket         = "aws-blue-green-deployment"
     region         = "eu-central-1"
-    key            = "Demo-Devops-Project/terraform.tfstate"
-    dynamodb_table = "terraform-tfstate"
+    key            = "terraform/state.tfstate"
+    dynamodb_table = "terraform-lock-table"
     encrypt        = true
   }
   required_version = ">=0.13.0"

@@ -1,27 +1,45 @@
-#Comment from GitHub second
 resource "aws_vpc" "devops-vpc" {
   cidr_block       = var.vpc
   instance_tenancy = "default"
 }
 
-#Create two private subnet for private resources
-resource "aws_subnet" "private-subnet" {
+#Create private subnets for private resources like AWS EKS
+resource "aws_subnet" "blue-private-subnet" {
   vpc_id                  = aws_vpc.devops-vpc.id
-  cidr_block              = element(var.private-subnet-cidr, count.index)
+  cidr_block              = element(var.blue-private-subnet-cidr, count.index)
   availability_zone       = element(var.availability_zone, count.index)
   map_public_ip_on_launch = false
-  count                   = length(var.private-subnet-cidr)
+  count                   = length(var.blue-private-subnet-cidr)
+}
+
+resource "aws_subnet" "green-private-subnet" {
+  vpc_id                  = aws_vpc.devops-vpc.id
+  cidr_block              = element(var.green-private-subnet-cidr, count.index)
+  availability_zone       = element(var.availability_zone, count.index)
+  map_public_ip_on_launch = false
+  count                   = length(var.green-private-subnet-cidr)
+}
+
+
+
+#Create public subnets for public resources like alb, CI/CD tools
+resource "aws_subnet" "blue-public-subnet" {
+  vpc_id                  = aws_vpc.devops-vpc.id
+  cidr_block              = element(var.blue-public-subnet-cidr, count.index)
+  availability_zone       = element(var.availability_zone, count.index)
+  map_public_ip_on_launch = true
+  count                   = length(var.blue-public-subnet-cidr)
 
   depends_on = [aws_vpc.devops-vpc]
 }
 
-#Create two public subnet for public resources like alb
-resource "aws_subnet" "public-subnet" {
+
+resource "aws_subnet" "green-public-subnet" {
   vpc_id                  = aws_vpc.devops-vpc.id
-  cidr_block              = element(var.public-subnet-cidr, count.index)
+  cidr_block              = element(var.green-public-subnet-cidr, count.index)
   availability_zone       = element(var.availability_zone, count.index)
   map_public_ip_on_launch = true
-  count                   = length(var.public-subnet-cidr)
+  count                   = length(var.green-public-subnet-cidr)
 
   depends_on = [aws_vpc.devops-vpc]
 }
@@ -30,48 +48,71 @@ resource "aws_subnet" "public-subnet" {
 #Access outside resources
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.devops-vpc.id
-
-  depends_on = [aws_vpc.devops-vpc]
 }
 
 
-#Routing for  servers to access internet via NATGW
-resource "aws_eip" "eip" {
+#Routing for  resoursec to access internet via NATGW (Blue enviroment)
+resource "aws_eip" "blue-eip" {
     domain = "vpc"
-    count = 2
-    depends_on = [aws_internet_gateway.igw]
+    count = length(var.blue-private-subnet-cidr)
 }
 
-resource "aws_nat_gateway" "ngw" {
-  allocation_id = aws_eip.eip[count.index].id
-  subnet_id     = aws_subnet.public-subnet[count.index].id
-  count = 2
-  tags = {
-    Name = "NAT GW"
-  }
+resource "aws_nat_gateway" "blue-ngw" {
+  allocation_id = aws_eip.blue-eip[count.index].id
+  count = length(var.blue-private-subnet-cidr)
+  subnet_id     = aws_subnet.blue-public-subnet[count.index].id
   depends_on = [aws_internet_gateway.igw]
 }
 
 
-resource "aws_route_table" "route-ngw" {
-  count = 2
+resource "aws_route_table" "blue-route-ngw" {
   vpc_id = aws_vpc.devops-vpc.id
+  count = length(var.blue-private-subnet-cidr)
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.ngw[count.index].id
+    gateway_id = aws_nat_gateway.blue-ngw[count.index].id
   }
-  tags = {
-    Name = "Used to access to internet via NATGW"
-  }
-  depends_on = [aws_nat_gateway.ngw]
 }
 
 
-resource "aws_route_table_association" "rt-web" {
-  count =2
-  subnet_id      = aws_subnet.private-subnet[count.index].id
-  route_table_id = aws_route_table.route-ngw[count.index].id
-  depends_on = [aws_route_table.route-ngw]
+resource "aws_route_table_association" "blue-rt-web" {
+  count          = length(var.blue-private-subnet-cidr)
+  subnet_id      = aws_subnet.blue-private-subnet[count.index].id
+  route_table_id = aws_route_table.blue-route-ngw[count.index].id
+  depends_on = [aws_route_table.blue-route-ngw[count.index]]
+  
+}
+
+#Routing for  resoursec to access internet via NATGW (Green  enviroment)
+resource "aws_eip" "green-eip" {
+    domain = "vpc"
+    count = length(var.green-private-subnet-cidr)
+}
+
+resource "aws_nat_gateway" "green-ngw" {
+  allocation_id = aws_eip.green-eip[count.index].id
+  count = length(var.green-private-subnet-cidr)
+  subnet_id     = aws_subnet.green-public-subnet[count.index].id
+  depends_on = [aws_internet_gateway.igw]
+}
+
+
+resource "aws_route_table" "green-route-ngw" {
+  vpc_id = aws_vpc.devops-vpc.id
+  count = length(var.green-private-subnet-cidr)
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.green-ngw[count.index].id
+  }
+  depends_on = [aws_nat_gateway.green-ngw[count.index]]
+}
+
+
+resource "aws_route_table_association" "green-rt-web" {
+  count          = length(var.green-private-subnet-cidr)
+  subnet_id      = aws_subnet.green-private-subnet[count.index].id
+  route_table_id = aws_route_table.green-route-ngw[count.index].id
+  depends_on = [aws_route_table.green-route-ngw[count.index]]
   
 }
 
@@ -87,10 +128,17 @@ resource "aws_route_table" "route-public" {
   depends_on = [aws_internet_gateway.igw]
 }
 
-resource "aws_route_table_association" "rt-public" {
-  count = 2
-  subnet_id      = aws_subnet.public-subnet[count.index].id
+resource "aws_route_table_association" "blue-rt-public" {
+  count          = length(var.blue-public-subnet-cidr)
+  subnet_id      = aws_subnet.blue-public-subnet[count.index].id
   route_table_id = aws_route_table.route-public.id
-  depends_on = [aws_internet_gateway.igw]
+  depends_on     = [aws_internet_gateway.igw]
+}
+
+resource "aws_route_table_association" "green-rt-public" {
+  count          = length(var.green-public-subnet-cidr)
+  subnet_id      = aws_subnet.green-public-subnet[count.index].id
+  route_table_id = aws_route_table.route-public.id
+  depends_on     = [aws_internet_gateway.igw]
 }
 
