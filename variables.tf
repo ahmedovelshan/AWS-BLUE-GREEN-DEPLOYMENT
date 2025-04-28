@@ -56,7 +56,7 @@ variable "eks_name" {
 variable "cloudwatch_log_name" {
     type = string
     description = "cloudwatch log location name"
-    default = "devops-eks-cloudwatchlog"
+    default = "devops-aws-eks-cloudwatchlog"
 }
 
 variable "alb-port" {
