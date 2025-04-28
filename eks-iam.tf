@@ -61,3 +61,13 @@ resource "aws_iam_role_policy_attachment" "eks_node_group_registry_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+#Below Policy used for ALB
+
+data "http" "AWSLoadBalancerControllerIAMPolicy_JSON" {
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.12.0/docs/install/iam_policy.json"
+}
+
+resource "aws_iam_policy" "AWSLoadBalancerControllerIAMPolicy" {
+  name   = "AWSLoadBalancerControllerIAMPolicy"
+  policy = data.http.AWSLoadBalancerControllerIAMPolicy_JSON.body
+}

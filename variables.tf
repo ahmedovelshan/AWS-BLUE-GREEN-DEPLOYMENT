@@ -4,6 +4,24 @@ variable "vpc" {
   default = "10.0.0.0/16"
 }
 
+variable "region_name" {
+  type = string
+  description = "In which region all resource will be created"
+  default = "eu-central-1"
+}
+
+variable "blue_cluster_name" {
+  type = string
+  description = "AWS EKS Cluster name for Blue Enviroment"
+  default = "blue-eks-cluster"
+}
+
+variable "green_cluster_name" {
+  type = string
+  description = "AWS EKS Cluster name for Green Enviroment"
+  default = "green-eks-cluster"
+}
+
 variable "availability_zone" {
   type    = list(string)
   default = ["eu-central-1a", "eu-central-1b"]
@@ -31,7 +49,7 @@ variable "green-public-subnet-cidr" {
 
 variable "eks_name" {
   type = string
-  description = "ECS Cluster name"
+  description = "EKS Cluster name"
   default = "devops-ecs-cluster"
 }
 
@@ -39,7 +57,6 @@ variable "cloudwatch_log_name" {
     type = string
     description = "cloudwatch log location name"
     default = "devops-eks-cloudwatchlog"
-  
 }
 
 variable "alb-port" {
@@ -61,3 +78,4 @@ variable "ci-cd-tool-port" {
   type = list(string)
   default = ["8080", "3000", "9090", "32630", "22", "8081", "6443", "465", "80", "9115", "9000"]
 }
+

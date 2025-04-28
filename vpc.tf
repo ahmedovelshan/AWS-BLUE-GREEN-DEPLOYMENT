@@ -1,6 +1,8 @@
 resource "aws_vpc" "devops-vpc" {
   cidr_block       = var.vpc
   instance_tenancy = "default"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 }
 
 #Create private subnets for private resources like AWS EKS
@@ -14,6 +16,8 @@ resource "aws_subnet" "blue-private-subnet" {
   tags = {
     Name = "blue-private-subnet-${count.index + 1}"
     Environment = "blue"
+    "kubernetes.io/cluster/${var.blue_cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"  = "1"
   } 
 }
 
@@ -27,6 +31,8 @@ resource "aws_subnet" "green-private-subnet" {
   tags = {
     Name = "green-private-subnet-${count.index + 1}"
     Environment = "green"
+    "kubernetes.io/cluster/${var.green_cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"  = "1"
   } 
 }
 
@@ -43,6 +49,8 @@ resource "aws_subnet" "blue-public-subnet" {
   tags = {
     Name = "blue-public-subnet-${count.index + 1}"
     Environment = "blue"
+    "kubernetes.io/cluster/${var.blue_cluster_name}" = "shared"
+    "kubernetes.io/role/elb"  = "1"
   } 
 }
 
@@ -57,6 +65,8 @@ resource "aws_subnet" "green-public-subnet" {
   tags = {
     Name = "green-public-subnet-${count.index + 1}"
     Environment = "green"
+    "kubernetes.io/cluster/${var.green_cluster_name}" = "shared"
+    "kubernetes.io/role/elb"  = "1"
   } 
 }
 
@@ -137,7 +147,6 @@ resource "aws_route_table" "route-public" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  depends_on = [aws_internet_gateway.igw]
 }
 
 resource "aws_route_table_association" "blue-rt-public" {

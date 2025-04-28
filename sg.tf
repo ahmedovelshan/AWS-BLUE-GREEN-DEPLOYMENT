@@ -84,3 +84,15 @@ resource "aws_security_group" "ci-cd-tools" {
         cidr_blocks = [ "0.0.0.0/0" ]
     }
 }
+#Access from EC2 VM to AWS EKS Cluster for management
+resource "aws_security_group_rule" "blue_allow_ci_cd_tools" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  security_group_id        = data.aws_security_group.blue_eks_sg.id
+  source_security_group_id = aws_security_group.ci-cd-tools.id
+
+  depends_on = [aws_eks_node_group.blue_eks_node_group]
+}
+

@@ -28,6 +28,7 @@ resource "aws_instance" "ci-cd-tools" {
     volume_size = 20
   }
   count = 1
+  depends_on = [ aws_eks_node_group.blue_eks_node_group ]
 
   network_interface {
     network_interface_id = aws_network_interface.web-ec2-network[count.index].id
@@ -61,7 +62,8 @@ resource "aws_instance" "ci-cd-tools" {
       containerd.io \
       docker-buildx-plugin \
       docker-compose-plugin
-    sudo usermod -aG docker $USER
+    ec2_username=$(awk -F: '$3 == 1000 { print $1; exit }' /etc/passwd)
+    sudo usermod -aG docker $ec2_username
 
     # Run Nexus
     sudo docker run -d --name nexus -p 8081:8081 sonatype/nexus3:latest
@@ -89,6 +91,38 @@ resource "aws_instance" "ci-cd-tools" {
     # Install Trivy
     wget https://github.com/aquasecurity/trivy/releases/download/v0.43.0/trivy_0.43.0_Linux-64bit.deb
     sudo dpkg -i trivy_0.43.0_Linux-64bit.deb
+
+    #Connect to AWS EKS Cluster
+    aws configure set aws_access_key_id "${var.aws_access_key}" && aws configure set aws_secret_access_key "${var.aws_secret_key}" && aws configure set region "${var.region_name}"
+    aws eks update-kubeconfig --region "${var.region_name}" --name "${var.blue_cluster_name}"
+
+
+    #Install IAM OIDC provider for your EKS cluster
+    eksctl utils associate-iam-oidc-provider \
+    --region "${var.region_name}" \
+    --cluster "${var.blue_cluster_name}" \
+    --approve
+
+
+    echo "Waiting for OIDC provider to be ready..."
+    for i in {1..10}; do
+      if aws eks describe-cluster --region ${var.region_name} --name ${var.blue_cluster_name} --query "cluster.identity.oidc.issuer" --output text | grep -q "https://"; then
+        echo "OIDC provider is ready."
+        break
+      else
+        echo "OIDC provider not ready yet. Sleeping 10s..."
+        sleep 10
+      fi
+    done
+
+    eksctl create iamserviceaccount \
+    --cluster="${var.blue_cluster_name}" \
+    --namespace=kube-system \
+    --name=blue-aws-load-balancer-controller \
+    --attach-policy-arn="arn:aws:iam::${local.aws_account_id}:policy/AWSLoadBalancerControllerIAMPolicy" \
+    --override-existing-serviceaccounts \
+    --approve
+
 
 EOF
 }
