@@ -1,8 +1,7 @@
 name: Validate Terraform configuration files.
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch: 
 permissions:  # ✅ Add this block
   contents: write
   pull-requests: write
