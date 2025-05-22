@@ -8,27 +8,27 @@ data "aws_ami" "ubuntu" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-  owners = ["099720109477"] 
+  owners = ["099720109477"]
 }
 
 resource "aws_network_interface" "web-ec2-network" {
-  subnet_id   = aws_subnet.blue-public-subnet[count.index].id
-  count = length(var.blue-public-subnet-cidr)
+  subnet_id       = aws_subnet.blue-public-subnet[count.index].id
+  count           = length(var.blue-public-subnet-cidr)
   security_groups = [aws_security_group.ci-cd-tools.id]
 }
 
 
 
 resource "aws_instance" "ci-cd-tools" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.large"
+  ami               = data.aws_ami.ubuntu.id
+  instance_type     = "t2.large"
   availability_zone = "eu-central-1a"
   root_block_device {
     delete_on_termination = true
-    volume_size = 20
+    volume_size           = 20
   }
-  count = 1
-  depends_on = [ aws_eks_node_group.blue_eks_node_group ]
+  count      = 1
+  depends_on = [aws_eks_node_group.blue_eks_node_group]
 
   network_interface {
     network_interface_id = aws_network_interface.web-ec2-network[count.index].id

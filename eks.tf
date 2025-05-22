@@ -4,7 +4,7 @@ resource "aws_eks_cluster" "blue_eks_cluster" {
   version  = "1.31"
 
   vpc_config {
-    subnet_ids         = aws_subnet.blue-private-subnet[*].id
+    subnet_ids              = aws_subnet.blue-private-subnet[*].id
     endpoint_private_access = true
     endpoint_public_access  = false
   }
@@ -29,12 +29,12 @@ resource "aws_eks_node_group" "blue_eks_node_group" {
 
 
 module "eks-kubeconfig" {
-  source     = "hyperbadger/eks-kubeconfig/aws"
-  version    = "1.0.0"
+  source  = "hyperbadger/eks-kubeconfig/aws"
+  version = "1.0.0"
 
   depends_on = [aws_eks_cluster.blue_eks_cluster]
-  cluster_id =  aws_eks_cluster.blue_eks_cluster.id
-  }
+  cluster_id = aws_eks_cluster.blue_eks_cluster.id
+}
 
 resource "local_file" "kubeconfig" {
   content  = module.eks-kubeconfig.kubeconfig
