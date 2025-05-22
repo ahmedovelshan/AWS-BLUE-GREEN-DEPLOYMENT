@@ -24,3 +24,9 @@ jobs:
           title: Reformat terraform files
           body: Update Terraform files to canonical format using `terraform fmt`
           branch: automated-terraform-fmt
+          
+      - name: terraform validate
+        uses: dflook/terraform-validate@v1
+        id: validate
+        with:
+          path: .
