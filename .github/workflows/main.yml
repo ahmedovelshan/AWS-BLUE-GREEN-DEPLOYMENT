@@ -5,21 +5,22 @@ on:
     branches: [ "main" ]
 
 jobs:
-  terraform:
-    name: Terraform Validate & Plan
+  format:
     runs-on: ubuntu-latest
-
+    name: Check Terraform file are formatted correctly
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: terraform fmt
+        uses: dflook/terraform-fmt@v1
         with:
-          terraform_version: 1.6.0
+          path: my-terraform-config
 
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Formatting
-        run: terraform fmt -recursive
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: terraform fmt
+          title: Reformat terraform files
+          body: Update Terraform files to canonical format using `terraform fmt`
+          branch: automated-terraform-fmt
