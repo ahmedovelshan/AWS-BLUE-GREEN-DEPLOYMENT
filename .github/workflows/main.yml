@@ -5,15 +5,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-  check_format:
+  terraform:
+    name: Terraform Validate & Plan
     runs-on: ubuntu-latest
-    name: Check Terraform file are formatted correctly
+
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: terraform fmt
-        uses: dflook/terraform-fmt-check@v1
-        id: fmt-check
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          path: .
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Formatting
+        run: terraform fmt -recursive
