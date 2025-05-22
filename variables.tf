@@ -1,25 +1,25 @@
 variable "vpc" {
-  type = string
+  type        = string
   description = "VPC CIDR"
-  default = "10.0.0.0/16"
+  default     = "10.0.0.0/16"
 }
 
 variable "region_name" {
-  type = string
+  type        = string
   description = "In which region all resource will be created"
-  default = "eu-central-1"
+  default     = "eu-central-1"
 }
 
 variable "blue_cluster_name" {
-  type = string
+  type        = string
   description = "AWS EKS Cluster name for Blue Enviroment"
-  default = "blue-eks-cluster"
+  default     = "blue-eks-cluster"
 }
 
 variable "green_cluster_name" {
-  type = string
+  type        = string
   description = "AWS EKS Cluster name for Green Enviroment"
-  default = "green-eks-cluster"
+  default     = "green-eks-cluster"
 }
 
 variable "availability_zone" {
@@ -48,34 +48,34 @@ variable "green-public-subnet-cidr" {
 }
 
 variable "eks_name" {
-  type = string
+  type        = string
   description = "EKS Cluster name"
-  default = "devops-ecs-cluster"
+  default     = "devops-ecs-cluster"
 }
 
 variable "cloudwatch_log_name" {
-    type = string
-    description = "cloudwatch log location name"
-    default = "devops-aws-eks-cloudwatchlog"
+  type        = string
+  description = "cloudwatch log location name"
+  default     = "devops-aws-eks-cloudwatchlog"
 }
 
 variable "alb-port" {
   description = "List of ports to allow"
-  type = list(string)
-  default = ["80", "443"]
+  type        = list(string)
+  default     = ["80", "443"]
 }
 
 
 variable "eks-ec2-port" {
   description = "List of ports to allow"
-  type = list(string)
-  default = ["80", "443", "22"]
+  type        = list(string)
+  default     = ["80", "443", "22"]
 }
 
 
 variable "ci-cd-tool-port" {
   description = "List of ports to allow"
-  type = list(string)
-  default = ["8080", "3000", "9090", "32630", "22", "8081", "6443", "465", "80", "9115", "9000"]
+  type        = list(string)
+  default     = ["8080", "3000", "9090", "32630", "22", "8081", "6443", "465", "80", "9115", "9000"]
 }
 

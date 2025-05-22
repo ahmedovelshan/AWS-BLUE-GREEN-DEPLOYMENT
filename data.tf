@@ -1,15 +1,15 @@
 data "aws_eks_cluster" "blue" {
-  name = "blue-eks-cluster"
-  depends_on = [ aws_eks_node_group.blue_eks_node_group ]
+  name       = "blue-eks-cluster"
+  depends_on = [aws_eks_node_group.blue_eks_node_group]
 }
 
 data "aws_security_group" "blue_eks_sg" {
-  id = data.aws_eks_cluster.blue.vpc_config[0].cluster_security_group_id
-  depends_on = [ aws_eks_node_group.blue_eks_node_group ]
+  id         = data.aws_eks_cluster.blue.vpc_config[0].cluster_security_group_id
+  depends_on = [aws_eks_node_group.blue_eks_node_group]
 }
 
 output "blue_eks_cluster" {
-    value = data.aws_security_group.blue_eks_sg.id
+  value = data.aws_security_group.blue_eks_sg.id
 }
 
 data "aws_caller_identity" "root" {}
